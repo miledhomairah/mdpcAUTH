@@ -53,49 +53,31 @@ a { color:#1e90ff; text-decoration:none; }
 </div>
 
 <script type="module" src="auth.js"></script>
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
+<script>
+const params = new URLSearchParams(window.location.search);
+const redirect = params.get("redirect") || "https://dan.miled-dev.xyz";
 
-// Firebase config
-const firebaseConfig = {
-  apiKey: "AIzaSyBJGYpc-Zeb1WUs9_WYTZRp5Rrf3fyJlYk",
-  authDomain: "danlogin-3e18f.firebaseapp.com",
-  projectId: "danlogin-3e18f",
-  appId: "1:661754509510:web:f2c29d318dca86dc6d3fc7"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-await setPersistence(auth, browserLocalPersistence);
-
+// ✅ Helper: set cookie accessible to all miled-dev.xyz subdomains
 function setCookie(name, value, days = 1) {
   const expires = new Date(Date.now() + days*864e5).toUTCString();
   document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; domain=.miled-dev.xyz; SameSite=Lax`;
 }
 
-const params = new URLSearchParams(window.location.search);
-const redirect = params.get("redirect") || "https://dan.miled-dev.xyz";
-
-async function login() {
-  const emailVal = document.getElementById("email").value.trim();
-  const passVal = document.getElementById("password").value.trim();
-  const error = document.getElementById("error");
-
-  try {
-    const userCredential = await signInWithEmailAndPassword(auth, emailVal, passVal);
-    // ✅ User authenticated by Firebase → set cookie
-    setCookie("mdpc_auth", "true", 1);
-    setCookie("mdpc_user", emailVal, 1);
-
-    window.location.replace(redirect);
-  } catch(err) {
-    error.innerText = err.message;
-  }
+// ✅ Login function wraps Firebase login and sets cookie
+function login(){
+  mdpcLogin(email.value, password.value)
+    .then(() => {
+      setCookie("mdpc_auth", "true", 1);      // mark user as logged in
+      setCookie("mdpc_user", email.value, 1); // store email
+      window.location.href = redirect;
+    })
+    .catch(err => {
+      error.innerText = err.message;
+    });
 }
 
-// Optional: if already logged in via Firebase, auto-set cookie
-onAuthStateChanged(auth, user => {
+// ✅ Auto-set cookie if user already logged in via Firebase
+mdpcAuthState(user => {
   if (user) {
     setCookie("mdpc_auth", "true", 1);
     setCookie("mdpc_user", user.email, 1);
@@ -105,4 +87,3 @@ onAuthStateChanged(auth, user => {
 
 </body>
 </html>
-
