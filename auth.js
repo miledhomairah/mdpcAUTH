@@ -3,9 +3,8 @@ import {
   getAuth,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
-  signOut,
-  setPersistence,
-  browserLocalPersistence
+  onAuthStateChanged,
+  signOut
 } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
 
 const firebaseConfig = {
@@ -18,10 +17,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-// 🔑 REQUIRED: persistence for cross-subdomain auth
-await setPersistence(auth, browserLocalPersistence);
-
-// Expose API globally
+// expose functions globally
 window.mdpcLogin = (email, password) =>
   signInWithEmailAndPassword(auth, email, password);
 
@@ -29,3 +25,6 @@ window.mdpcSignup = (email, password) =>
   createUserWithEmailAndPassword(auth, email, password);
 
 window.mdpcLogout = () => signOut(auth);
+
+window.mdpcAuthState = (cb) =>
+  onAuthStateChanged(auth, cb);
