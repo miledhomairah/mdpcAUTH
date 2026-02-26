@@ -51,14 +51,18 @@ a { color:#1e90ff; text-decoration:none; }
 </div>
 
 <script type="module" src="auth.js"></script>
+
 <script>
 const params = new URLSearchParams(window.location.search);
-const redirect = params.get("redirect") || "dashboard.html";
+const redirect = params.get("redirect"); // DO NOT default to protected pages
 
 function login(){
   mdpcLogin(email.value, password.value)
     .then(() => {
-      window.location.href = redirect;
+      // Redirect ONLY after successful login
+      window.location.replace(
+        redirect || "https://dan.miled-dev.xyz"
+      );
     })
     .catch(err => {
       error.innerText = err.message;
@@ -67,4 +71,5 @@ function login(){
 </script>
 
 </body>
+
 </html>
